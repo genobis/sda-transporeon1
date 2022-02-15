@@ -153,7 +153,7 @@ class StudentServiceTest {
                 .containsExactlyInAnyOrder("00001003", "00001008", "00002004");
     }
 
-    /*@Test
+    @Test
     void getOldestStudentFromEachCity() {
         //WHEN
         var cityToStudentMap = studentService.getOldestStudentFromEachCity();
@@ -168,7 +168,7 @@ class StudentServiceTest {
         assertThat(cityToStudentMap.get("Skawina").getId()).isEqualTo("00002001");
         assertThat(cityToStudentMap.get("Wieliczka").getId()).isEqualTo("00001006");
         assertThat(cityToStudentMap.get("Zabierzów").getId()).isEqualTo("00002004");
-    }*/
+    }
 
     @Test
     void getRatioOfStudentsNotFrom() {

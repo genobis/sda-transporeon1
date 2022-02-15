@@ -20,7 +20,7 @@ public class StudentService {
                 ));
     }
 
-    public Map<String,List<Student>> getCityToStudentsMap() {
+    public Map<String, List<Student>> getCityToStudentsMap() {
         return students.stream()
                 .collect(Collectors.groupingBy(student -> student.getAddress().getCity()));
     }
@@ -38,37 +38,58 @@ public class StudentService {
     }
 
     public List<Student> getStudentsSortedByCityAndLastName() {
+        Comparator<Student> cityComparator = Comparator.comparing(student -> student.getAddress().getCity());
         return students.stream()
-                .sorted(Comparator.comparing(Student::getLastName))
-                .sorted(Comparator.comparing((student -> student.getAddress().getCity())))
+                //.sorted(Comparator.comparing((Function<Student,String>) student -> student.getAddress().getCity()).thenComparing(Student::getLastName))
+                .sorted(cityComparator.thenComparing(Student::getLastName))
                 .collect(Collectors.toList());
     }
 
     public List<Student> getStudentsByYearSortedByLastAndFirstName(byte schoolYear) {
         return students.stream()
                 .filter(student -> student.getSchoolYear() == schoolYear)
-                .sorted(Comparator.comparing(Student::getFirstName))
-                .sorted(Comparator.comparing(Student::getLastName))
+                .sorted(Comparator.comparing(Student::getLastName)
+                        .thenComparing(Student::getFirstName))
                 .collect(Collectors.toList());
     }
 
     public List<Student> getStudentsWhichRepeatedAYear() {
         return students.stream()
-                .filter(student -> (2022 - student.getStartYear() > student.getSchoolYear()))
+                .filter(student -> 2022 - student.getStartYear() > student.getSchoolYear())
                 .collect(Collectors.toList());
 
     }
 
-    /*public List<Student> getOldestStudentFromEachCity() {
+    public Map<String, Student> getOldestStudentFromEachCity() {
+//        return students.stream()
+//                .collect(Collectors.groupingBy(student -> student.getAddress().getCity(),
+//                        Collectors.minBy(Comparator.comparing(Student::getBirthDate))))
+//                .values()
+//                .stream()
+//                .map(Optional::get)
+//                .collect(Collectors.toUnmodifiableMap(
+//                        student -> student.getAddress().getCity(),
+//                        Function.identity()
+//                ));
 
-    }*/
+        return students.stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        student -> student.getAddress().getCity(),
+                        student -> student,
+                        (student1, student2) -> {
+                            if (student1.getBirthDate().isBefore(student2.getBirthDate())) {
+                                return student1;
+                            }
+                            return student2;
+                        }
+                ));
+    }
 
     public double getRatioOfStudentsNotFrom(String city) {
-        List<Student> studentsNotKrakow = students.stream()
-                .sorted(Comparator.comparing(student -> student.getAddress().getCity()))
-                .filter(student -> !student.getAddress().getCity().equals("Kraków"))
-                .collect(Collectors.toList());
+        long studentsNotFromCity = students.stream()
+                .filter(student -> !student.getAddress().getCity().equals(city))
+                .count();
 
-        return (double) (studentsNotKrakow.size()) / (double) (students.size()) * 100;
+        return studentsNotFromCity * 100.0/ students.size() ;
     }
 }
